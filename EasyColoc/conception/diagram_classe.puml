@@ -1,0 +1,99 @@
+@startuml
+class User {
+  - id : int
+  - name : string
+  - email : string
+  - password : string
+  - role : enum
+  - reputation_score : int
+  - is_banned : boolean
+  --
+  + signIn()
+  + login()
+  + logOut()
+}
+
+class Member {
+  --
+  + joinCollocation()
+  + checkMembersList()
+  + addExpense()
+  + addPayment()
+  + checkSold()
+  + checkExpensesList()
+  + quitCollocation()
+}
+
+class Owner {
+  --
+  + addCollocation()
+  + cancelCollocation()
+  + sendInvitation()
+  + addMember()
+  + deleteMember()
+}
+
+class Expense {
+  - id : int
+  - colocation_id : int
+  - payer_id : int
+  - category_id : int
+  - title : string
+  - amount : double
+  - expense_date : datetime
+  --
+  + method(type): type
+}
+
+class Collocation {
+  - id : int
+  - name : string
+  - owner_id : int
+  - status : enum
+  - cancelled_at : datetime
+  --
+  + method(type): type
+}
+
+class Invitation {
+  - id : int
+  - sender_id : int
+  - receiver_id : int
+  - collocation_id : int
+  - token : string
+  - status : enum
+  - created_at : datetime
+  --
+  + createInvitation()
+}
+
+class Categorie {
+  + field: type
+  --
+  + method(type): type
+}
+
+class Payment {
+  + field: type
+  --
+  + method(type): type
+}
+
+' Inheritance
+Member --|> User
+Owner --|> User
+
+' Member relations
+Member "1..*" -- "1" Collocation : Rejoindre >
+Member "1" -- "1..*" Expense : < avoir
+Member "1" -- "1..*" Payment : effectuer >
+Member "1" -- "1..*" Invitation : recevoir >
+
+' Owner relations
+Owner "1" -- "1..*" Collocation : < Créer
+Owner "1" -- "1..*" Invitation : < envoyer
+Owner "1" -- "1..*" Payment : < recevoir
+
+' Expense relations
+Expense "1..*" -- "1" Categorie : appartient >
+@enduml

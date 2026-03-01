@@ -1,0 +1,95 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+
+actor User
+actor Member
+actor Owner
+actor Admin
+actor Database <<secondary>>
+
+' --- Forcer l’ordre vertical ---
+User --[hidden]--> Member
+Member --[hidden]--> Owner
+Owner --[hidden]--> Admin
+
+User <|-- Member
+User <|-- Owner
+User <|-- Admin
+
+rectangle "EasyColoc System" {
+
+  ' ---------------- AUTHENTIFICATION ----------------
+  (S’authentifier)
+  User --> (S'inscrire)
+  User --> (Se connecter)
+  User --> (Réinitialiser le mot de passe)
+  User --> (Gérer le profil)
+
+  Database --> (S’authentifier)
+
+  ' Tous les UC protégés incluent authentification
+  (Gérer le profil) --> (S’authentifier) : <<include>>
+
+  ' ---------------- COLLOCATION ----------------
+  Owner --> (Créer une colocation)
+  Owner --> (Annuler une colocation)
+  Owner --> (Gérer les membres)
+  Owner --> (Attribuer un rôle)
+
+  (Créer une colocation) --> (S’authentifier) : <<include>>
+  (Annuler une colocation) --> (S’authentifier) : <<include>>
+  (Gérer les membres) --> (S’authentifier) : <<include>>
+  (Attribuer un rôle) --> (S’authentifier) : <<include>>
+
+  (Gérer les membres) --> (Inviter des membres)
+  (Gérer les membres) --> (Supprimer des membres)
+
+  Member --> (Rejoindre via invitation)
+  (Rejoindre via invitation) --> (Accepter invitation)
+  (Rejoindre via invitation) --> (Refuser invitation)
+  (Rejoindre via invitation) --> (S’authentifier) : <<include>>
+
+  Member --> (Quitter une colocation)
+  (Quitter une colocation) --> (S’authentifier) : <<include>>
+
+  Member --> (Voir membres, rôles et réputations)
+  (Voir membres, rôles et réputations) --> (S’authentifier) : <<include>>
+
+  ' ---------------- DEPENSES ----------------
+  Member --> (Ajouter une dépense)
+  Member --> (Modifier une dépense)
+  Member --> (Supprimer une dépense)
+  Member --> (Marquer un paiement)
+  Member --> (Voir son solde)
+  Member --> (Consulter "Qui doit à qui")
+  Member --> (Voir l’historique des dépenses)
+
+  (Ajouter une dépense) --> (S’authentifier) : <<include>>
+  (Modifier une dépense) --> (S’authentifier) : <<include>>
+  (Supprimer une dépense) --> (S’authentifier) : <<include>>
+  (Marquer un paiement) --> (S’authentifier) : <<include>>
+  (Voir son solde) --> (S’authentifier) : <<include>>
+  (Consulter "Qui doit à qui") --> (S’authentifier) : <<include>>
+  (Voir l’historique des dépenses) --> (S’authentifier) : <<include>>
+
+  ' ---------------- NOTIFICATIONS ----------------
+  (Ajouter une dépense) --> (Notifier les membres) : <<include>>
+  (Marquer un paiement) --> (Notifier les membres) : <<include>>
+
+  ' ---------------- REPUTATION ----------------
+  Member --> (Évaluer la réputation)
+  (Évaluer la réputation) --> (S’authentifier) : <<include>>
+
+  ' ---------------- ADMIN ----------------
+  Admin --> (Voir les statistiques)
+  Admin --> (Gérer les utilisateurs)
+
+  (Voir les statistiques) --> (S’authentifier) : <<include>>
+  (Gérer les utilisateurs) --> (S’authentifier) : <<include>>
+
+  (Gérer les utilisateurs) --> (Bannir utilisateur)
+  (Gérer les utilisateurs) --> (Débannir utilisateur)
+}
+
+@enduml

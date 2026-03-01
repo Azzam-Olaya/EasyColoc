@@ -3,6 +3,8 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -21,6 +23,10 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'is_global_admin',
+        'reputation_score',
+        'is_banned',
+        'banned_at',
     ];
 
     /**
@@ -43,6 +49,41 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_global_admin' => 'boolean',
+            'is_banned' => 'boolean',
+            'banned_at' => 'datetime',
         ];
+    }
+
+    public function colocations(): BelongsToMany
+    {
+        return $this->belongsToMany(Colocation::class)
+            ->withPivot(['role', 'joined_at', 'left_at'])
+            ->withTimestamps();
+    }
+
+    public function activeColocations(): BelongsToMany
+    {
+        return $this->colocations()->wherePivotNull('left_at');
+    }
+
+    public function expensesPaid(): HasMany
+    {
+        return $this->hasMany(Expense::class, 'paid_by_user_id');
+    }
+
+    public function invitationsSent(): HasMany
+    {
+        return $this->hasMany(Invitation::class, 'invited_by_user_id');
+    }
+
+    public function paymentsSent(): HasMany
+    {
+        return $this->hasMany(Payment::class, 'from_user_id');
+    }
+
+    public function paymentsReceived(): HasMany
+    {
+        return $this->hasMany(Payment::class, 'to_user_id');
     }
 }

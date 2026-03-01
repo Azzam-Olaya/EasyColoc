@@ -1,0 +1,68 @@
+# EasyColoc - même logique que https://github.com/Gourita-M/Brief-Crois-EasyColoc
+# Colocation, dépenses partagées, "qui doit à qui", invitations, admin global.
+
+services:
+  app:
+    networks:
+      - easycoloc
+    build:
+      context: .
+      dockerfile: dockerfile
+    container_name: easycoloc_app
+    working_dir: /var/www/html
+    volumes:
+      - .:/var/www/html
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_DATABASE=easycoloc
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=${DB_PASSWORD:-postgres}
+    command: php artisan serve --host=0.0.0.0 --port=8000
+
+  postgres:
+    networks:
+      - easycoloc
+    image: postgres:16-alpine
+    container_name: easycoloc_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: easycoloc
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+    ports:
+      - "5434:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d easycoloc"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  pgadmin:
+    networks:
+      - easycoloc
+    image: dpage/pgadmin4:latest
+    container_name: easycoloc_pgadmin
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5056:80"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+networks:
+  easycoloc:
+    driver: bridge
+
+volumes:
+  pgdata:
