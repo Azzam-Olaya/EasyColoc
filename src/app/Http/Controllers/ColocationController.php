@@ -58,7 +58,7 @@ class ColocationController extends Controller
             'role' => 'owner',
             'joined_at' => now(),
         ]);
-        echo "ana hnaaaaaaaaaaaaaaaaaaaaaaaaaa      ";
+        /* echo "ana hnaaaaaaaaaaaaaaaaaaaaaaaaaa      "; */
 
         return redirect()->route('colocations.show', $colocation);
     }
