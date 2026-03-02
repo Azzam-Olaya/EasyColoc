@@ -1,20 +1,39 @@
-# Image PHP avec CLI pour pouvoir lancer "php artisan serve"
-FROM php:8.4-cli
+FROM php:8.3-fpm-alpine
 
-# Extensions PHP pour Laravel + PostgreSQL
-RUN apt-get update && apt-get install -y \
-    libpq-dev \
-    libzip-dev \
-    unzip \
-    git \
+RUN apk add --no-cache \
+    bash \
     curl \
-    && docker-php-ext-install pdo pdo_pgsql zip \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
+    git \
+    unzip \
+    zip \
+    postgresql-dev \
+    nodejs \
+    npm \
+    build-base \
+    autoconf \
+    re2c \
+    libtool \
+    make \
+    pkgconfig \
+    zlib-dev \
+    oniguruma-dev \
+    libxml2-dev
 
-# Composer
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+RUN docker-php-ext-install \
+    pdo \
+    pdo_pgsql \
+    pgsql \
+    mbstring \
+    xml \
+    bcmath \
+    opcache
+
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www/html
 
-# L'app est montée en volume ; on lance le serveur Laravel
-CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]
+RUN mkdir -p storage bootstrap/cache \
+    && chown -R www-data:www-data /var/www/html \
+    && chmod -R 775 storage bootstrap/cache
+
+USER www-data
