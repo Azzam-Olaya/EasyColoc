@@ -8,3 +8,6 @@ body {
 [x-cloak] {
     display: none !important;
 }
+.material-symbols-outlined.fill-1 {
+    font-variation-settings: 'FILL' 1;
+}

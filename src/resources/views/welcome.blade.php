@@ -79,12 +79,12 @@
             @guest
             <div class="flex flex-col sm:flex-row gap-4 justify-center">
                 <a href="{{ route('login') }}" class="flex-1 h-14 bg-primary text-white font-bold rounded-xl shadow-lg shadow-primary/25 hover:bg-primary/90 transition-all flex items-center justify-center gap-2">
-                    <span class="material-symbols-outlined">login</span>
-                    Se connecter
+                    <span class="material-symbols-outlined">Se connecter</span>
+                    
                 </a>
                 <a href="{{ route('register') }}" class="flex-1 h-14 border-2 border-primary/30 text-primary font-bold rounded-xl hover:bg-primary/5 transition-all flex items-center justify-center gap-2">
-                    <span class="material-symbols-outlined">person_add</span>
-                    Créer un compte
+                    <span class="material-symbols-outlined">Créer un compte</span>
+                    
                 </a>
             </div>
             @else
@@ -97,19 +97,16 @@
             <!-- Features Grid -->
             <div class="grid grid-cols-3 gap-4 pt-8 text-center">
                 <div class="bg-white dark:bg-slate-900/50 p-4 rounded-xl border border-primary/10">
-                    <span class="material-symbols-outlined text-primary text-2xl mb-2">receipt_long</span>
-                    <p class="text-xs font-semibold text-slate-700 dark:text-slate-300">Dépenses</p>
+                    <span class="material-symbols-outlined text-primary text-2xl mb-3">Dépenses</span>
                     <p class="text-[10px] text-slate-500 dark:text-slate-400">Partagées</p>
                 </div>
                 <div class="bg-white dark:bg-slate-900/50 p-4 rounded-xl border border-primary/10">
-                    <span class="material-symbols-outlined text-primary text-2xl mb-2">splitscreen</span>
-                    <p class="text-xs font-semibold text-slate-700 dark:text-slate-300">Qui doit</p>
-                    <p class="text-[10px] text-slate-500 dark:text-slate-400">à qui</p>
+                    <span class="material-symbols-outlined text-primary text-2xl mb-2">Qui doit</span>
+                    <p class="text-[10px] text-slate-500 dark:text-slate-600">à qui</p>
                 </div>
                 <div class="bg-white dark:bg-slate-900/50 p-4 rounded-xl border border-primary/10">
-                    <span class="material-symbols-outlined text-primary text-2xl mb-2">groups</span>
-                    <p class="text-xs font-semibold text-slate-700 dark:text-slate-300">Coloc</p>
-                    <p class="text-[10px] text-slate-500 dark:text-slate-400">Facile</p>
+                    <span class="material-symbols-outlined text-primary text-2xl mb-2">Coloc</span>
+                    <p class="text-[10px] text-slate-500 dark:text-slate-600">Facile</p>
                 </div>
             </div>
 

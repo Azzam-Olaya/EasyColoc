@@ -13,10 +13,22 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+Route::get('/welcome', function () {
+    return view('welcome');
+})->name('welcome');
+
 Route::get('/dashboard', function (\Illuminate\Http\Request $request) {
     $user = $request->user();
     $activeColocation = $user->activeColocations()->with('owner')->first();
-    return view('dashboard', ['activeColocation' => $activeColocation]);
+    $monthlyExpensesTotal = $activeColocation
+        ? $activeColocation->expenses()->whereMonth('spent_at', now()->month)->whereYear('spent_at', now()->year)->sum('amount')
+        : 0;
+    $activeMembersCount = $activeColocation ? $activeColocation->activeMembers()->count() : 0;
+    return view('dashboard', [
+        'activeColocation' => $activeColocation,
+        'monthlyExpensesTotal' => $monthlyExpensesTotal,
+        'activeMembersCount' => $activeMembersCount,
+    ]);
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {

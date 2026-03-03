@@ -33,13 +33,13 @@
     </script>
 </head>
 <body class="bg-background-light dark:bg-background-dark font-display min-h-screen flex items-center justify-center p-4">
-
+    
 <div class="relative flex h-auto w-full max-w-[480px] flex-col bg-white dark:bg-slate-900 rounded-xl shadow-xl overflow-hidden border border-primary/10">
 
     <!-- Header -->
     <div class="flex items-center bg-white dark:bg-slate-900 p-4 pb-2 justify-between">
-        <a href="{{ route('login') }}" class="text-primary flex size-12 shrink-0 items-center justify-center hover:bg-primary/5 rounded-full transition-colors">
-            <span class="material-symbols-outlined">arrow_back</span>
+        <a href="{{ route('welcome') }}" class="text-primary flex size-12 shrink-0 items-center justify-center hover:bg-primary/5 rounded-full transition-colors">
+            <span class="material-symbols-outlined">Back</span>
         </a>
         <h2 class="text-slate-900 dark:text-slate-100 text-lg font-bold leading-tight tracking-tight flex-1 text-center pr-12">EasyColoc</h2>
     </div>
@@ -54,12 +54,9 @@
         @endif
 
         <!-- Hero Icon -->
-        <div class="flex justify-center mb-4">
-            <div class="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center">
-                <span class="material-symbols-outlined text-primary text-4xl">favorite</span>
+        <div class="@container mb-8">
+                <div class="w-full bg-center bg-no-repeat bg-cover flex flex-col justify-end overflow-hidden rounded-xl min-h-[180px] shadow-inner" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuB5G2HKvvVpkwsDcPPtQ8CyfziWYGZa3gOD5X_LWO9TiT_PwqZ36HMaOwXwns1C676ZOr75hsL-Ap-b9ggQE0RZB51bH_51tBmlkaBqIhcj34aQq3LD91NvJI0U8XScsQKdb42P3yrKXhPu_iu4nsRyTA3Bs0RbNS2IuPvFRdZO5AP2a-cOz4x1TPVHTqMAo4xwmT6f0c_KSiZ0ueCwUBD-7yOjd8adhWnPsmYka8JeGbRSPoTz-_AbvjzTbRBirc-9-iUzWofdqcgM");'></div>
             </div>
-        </div>
-
         <!-- Title -->
         <h1 class="text-slate-900 dark:text-slate-100 tracking-tight text-[32px] font-bold leading-tight text-center pb-2">
             Créer un compte
@@ -76,10 +73,9 @@
             <div class="flex flex-col gap-1.5">
                 <label for="name" class="text-slate-900 dark:text-slate-100 text-sm font-semibold ml-1">Nom complet</label>
                 <div class="relative">
-                    <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-primary/60">person</span>
                     <input id="name" name="name" type="text" value="{{ old('name') }}" required autofocus autocomplete="name"
                            class="flex w-full rounded-xl text-slate-900 dark:text-slate-100 focus:outline-0 focus:ring-2 focus:ring-primary/20 border border-primary/20 bg-white dark:bg-slate-800 focus:border-primary h-14 pl-12 pr-4 placeholder:text-slate-400 text-base font-normal transition-all"
-                           placeholder="Jean Dupont">
+                           placeholder="Nom complet">
                 </div>
                 <x-input-error :messages="$errors->get('name')" class="mt-1"/>
             </div>
@@ -87,10 +83,9 @@
             <div class="flex flex-col gap-1.5">
                 <label for="email" class="text-slate-900 dark:text-slate-100 text-sm font-semibold ml-1">Adresse email</label>
                 <div class="relative">
-                    <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-primary/60">mail</span>
-                    <input id="email" name="email" type="email" value="{{ old('email') }}" required autocomplete="username"
+                     <input id="email" name="email" type="email" value="{{ old('email') }}" required autocomplete="username"
                            class="flex w-full rounded-xl text-slate-900 dark:text-slate-100 focus:outline-0 focus:ring-2 focus:ring-primary/20 border border-primary/20 bg-white dark:bg-slate-800 focus:border-primary h-14 pl-12 pr-4 placeholder:text-slate-400 text-base font-normal transition-all"
-                           placeholder="jean@example.com">
+                           placeholder="exemple@example.com">
                 </div>
                 <x-input-error :messages="$errors->get('email')" class="mt-1"/>
             </div>
@@ -99,7 +94,6 @@
             <div class="flex flex-col gap-1.5">
                 <label for="password" class="text-slate-900 dark:text-slate-100 text-sm font-semibold ml-1">Mot de passe</label>
                 <div class="relative">
-                    <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-primary/60">lock</span>
                     <input id="password" name="password" type="password" required autocomplete="new-password"
                            class="flex w-full rounded-xl text-slate-900 dark:text-slate-100 focus:outline-0 focus:ring-2 focus:ring-primary/20 border border-primary/20 bg-white dark:bg-slate-800 focus:border-primary h-14 pl-12 pr-12 placeholder:text-slate-400 text-base font-normal transition-all"
                            placeholder="••••••••">
@@ -111,7 +105,6 @@
             <div class="flex flex-col gap-1.5">
                 <label for="password_confirmation" class="text-slate-900 dark:text-slate-100 text-sm font-semibold ml-1">Confirmer le mot de passe</label>
                 <div class="relative">
-                    <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-primary/60">lock_reset</span>
                     <input id="password_confirmation" name="password_confirmation" type="password" required autocomplete="new-password"
                            class="flex w-full rounded-xl text-slate-900 dark:text-slate-100 focus:outline-0 focus:ring-2 focus:ring-primary/20 border border-primary/20 bg-white dark:bg-slate-800 focus:border-primary h-14 pl-12 pr-4 placeholder:text-slate-400 text-base font-normal transition-all"
                            placeholder="••••••••">
