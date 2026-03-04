@@ -11,21 +11,13 @@ use Illuminate\View\View;
 
 class AdminController extends Controller
 {
-    public function dashboard(Request $request): View
+    public function users(Request $request): View
     {
-        $stats = [
-            'users' => User::query()->count(),
-            'banned_users' => User::query()->where('is_banned', true)->count(),
-            'colocations' => Colocation::query()->count(),
-            'expenses' => Expense::query()->count(),
-        ];
-
         $users = User::query()
             ->orderByDesc('created_at')
-            ->paginate(20);
+            ->paginate(20, ['*'], 'users_page');
 
-        return view('admin.dashboard', [
-            'stats' => $stats,
+        return view('admin.users', [
             'users' => $users,
         ]);
     }

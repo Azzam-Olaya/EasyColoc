@@ -47,12 +47,15 @@ Route::middleware('auth')->group(function () {
     Route::post('/invitations/{token}/accept', [InvitationController::class, 'accept'])->name('invitations.accept');
     Route::post('/invitations/{token}/decline', [InvitationController::class, 'decline'])->name('invitations.decline');
 
+    Route::post('/colocations/{colocation}/members/{user}/remove', [ColocationController::class, 'removeMember'])->name('colocations.members.remove');
+    Route::post('/colocations/{colocation}/leave', [ColocationController::class, 'leave'])->name('colocations.leave');
+
     Route::post('/colocations/{colocation}/categories', [CategoryController::class, 'store'])->name('categories.store');
     Route::post('/colocations/{colocation}/expenses', [ExpenseController::class, 'store'])->name('expenses.store');
     Route::post('/colocations/{colocation}/payments', [PaymentController::class, 'store'])->name('payments.store');
 
     Route::middleware('global_admin')->group(function () {
-        Route::get('/admin', [AdminController::class, 'dashboard'])->name('admin.dashboard');
+        Route::get('/admin/users', [AdminController::class, 'users'])->name('admin.users.index');
         Route::post('/admin/users/{user}/ban', [AdminController::class, 'ban'])->name('admin.users.ban');
         Route::post('/admin/users/{user}/unban', [AdminController::class, 'unban'])->name('admin.users.unban');
         Route::post('/admin/colocations/{colocation}/users/{user}/role', [ColocationController::class, 'updateMemberRole'])->name('admin.colocations.users.role');

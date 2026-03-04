@@ -1,3 +1,4 @@
+
 <x-dashboard-layout
     title="{{ $colocation->name }}"
     subtitle="Gérez les dépenses et membres de votre colocation"
@@ -131,10 +132,31 @@
                     </form>
                 </div>
             @else
-                <div class="col-span-full bg-white dark:bg-slate-900 rounded-xl border border-primary/5 shadow-sm p-6">
+                <div class="md:col-span-2 bg-white dark:bg-slate-900 rounded-xl border border-primary/5 shadow-sm p-6 flex items-center">
                     <p class="text-sm text-slate-600 dark:text-slate-300">
                         Tu es membre de la colocation <span class="font-semibold text-slate-900 dark:text-white">{{ $colocation->name }}</span>. Les actions d'administration sont réservées à l'owner.
                     </p>
+                </div>
+                
+                {{-- Leave Action --}}
+                <div class="bg-white dark:bg-slate-900 rounded-xl border border-red-100 dark:border-red-900/20 shadow-sm p-5 flex flex-col gap-3">
+                    <div class="flex items-center gap-3">
+                        <div class="h-9 w-9 bg-red-50 text-red-500 rounded-lg flex items-center justify-center shrink-0">
+                            <span class="material-symbols-outlined text-sm">logout</span>
+                        </div>
+                        <div>
+                            <h4 class="text-sm font-bold text-slate-900 dark:text-white">Départ</h4>
+                            <p class="text-[11px] text-slate-400">Quitter la colocation</p>
+                        </div>
+                    </div>
+                    <form method="POST" action="{{ route('colocations.leave', $colocation) }}"
+                        onsubmit="return confirm('Quitter définitivement cette colocation ? Ta réputation sera impactée selon ton solde et ta dette redistribuée.');" class="mt-1">
+                        @csrf
+                        <button type="submit"
+                            class="px-4 py-2 bg-red-500 text-white rounded-lg font-bold text-sm hover:bg-red-600 transition-colors">
+                            Quitter la colocation
+                        </button>
+                    </form>
                 </div>
             @endif
         </div>
@@ -157,26 +179,37 @@
                                     </span>
                                 </div>
                                 <div>
-                                    <p class="text-sm font-semibold text-slate-900 dark:text-slate-100">{{ $m->name }}</p>
+                                    <div class="flex items-center gap-2">
+                                        <p class="text-sm font-semibold text-slate-900 dark:text-slate-100">{{ $m->name }}</p>
+                                        <span class="px-1.5 py-0.5 rounded-md bg-amber-50 text-amber-600 text-[10px] font-bold flex items-center gap-0.5" title="Score de réputation">
+                                            <span class="material-symbols-outlined text-[10px]">stars</span>
+                                            {{ $m->reputation_score }}
+                                        </span>
+                                    </div>
                                     <p class="text-[10px] uppercase tracking-widest font-semibold text-slate-400">{{ $m->pivot->role }}</p>
                                 </div>
                             </div>
-                            @if (auth()->user()?->is_global_admin)
-                                <form method="POST"
-                                    action="{{ route('admin.colocations.users.role', [$colocation, $m]) }}"
-                                    class="flex items-center gap-1.5">
-                                    @csrf
-                                    <select name="role"
-                                        class="border-primary/20 bg-background-light dark:bg-slate-800 text-slate-700 dark:text-slate-200 rounded-full text-xs px-2 py-1 focus:border-primary focus:ring-primary/30">
-                                        <option value="member" @selected($m->pivot->role === 'member')>Membre</option>
-                                        <option value="owner" @selected($m->pivot->role === 'owner')>Owner</option>
-                                    </select>
-                                    <button type="submit"
-                                        class="px-3 py-1.5 bg-primary text-white rounded-lg font-bold text-xs hover:bg-primary/90 transition-colors">
-                                        OK
-                                    </button>
-                                </form>
-                            @endif
+                            <div class="flex items-center gap-2">
+                                @if (auth()->user()?->is_global_admin)
+                                    <form method="POST" action="{{ route('admin.colocations.users.role', [$colocation, $m]) }}" class="flex items-center gap-1.5">
+                                        @csrf
+                                        <select name="role" class="border-primary/20 bg-background-light dark:bg-slate-800 text-slate-700 dark:text-slate-200 rounded-full text-xs px-2 py-1 focus:border-primary focus:ring-primary/30">
+                                            <option value="member" @selected($m->pivot->role === 'member')>Membre</option>
+                                            <option value="owner" @selected($m->pivot->role === 'owner')>Owner</option>
+                                        </select>
+                                        <button type="submit" class="px-3 py-1.5 bg-primary text-white rounded-lg font-bold text-xs hover:bg-primary/90 transition-colors">OK</button>
+                                    </form>
+                                @endif
+                                
+                                @if ($isOwner && $m->id !== auth()->id() && $m->pivot->role !== 'owner')
+                                    <form method="POST" action="{{ route('colocations.members.remove', [$colocation, $m]) }}" onsubmit="return confirm('Retirer ce membre ? Si ce membre a une dette, elle vous sera intégralement imputée.');">
+                                        @csrf
+                                        <button type="submit" class="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors" title="Retirer ce membre">
+                                            <span class="material-symbols-outlined text-sm">person_remove</span>
+                                        </button>
+                                    </form>
+                                @endif
+                            </div>
                         </div>
                     @endforeach
                 </div>

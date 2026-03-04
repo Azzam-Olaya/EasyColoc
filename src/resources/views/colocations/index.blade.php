@@ -84,4 +84,59 @@
 
     @endif
 
+    @if (isset($allColocations))
+        <div class="mt-8 border-t border-primary/10 pt-8">
+            <div class="flex items-center justify-between mb-6">
+                <div>
+                    <h2 class="text-xl font-extrabold text-slate-800 dark:text-white">Toutes les colocations</h2>
+                    <p class="text-xs text-slate-500 mt-1">Vue administrateur globale</p>
+                </div>
+                <span class="text-xs font-bold text-primary">
+                    {{ $allColocations->total() }} total
+                </span>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                @foreach ($allColocations as $coloc)
+                    <div class="bg-white dark:bg-slate-900 p-5 rounded-xl border border-primary/5 shadow-sm flex items-center justify-between {{ $coloc->status === 'cancelled' ? 'opacity-70' : '' }}">
+                        <div class="flex items-center gap-4">
+                            <div class="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center font-bold text-primary text-lg">
+                                {{ strtoupper(substr($coloc->name, 0, 1)) }}
+                            </div>
+
+                            <div>
+                                <h3 class="font-bold text-slate-900 dark:text-slate-100">{{ $coloc->name }}</h3>
+                                <p class="text-[11px] text-slate-500 font-medium">
+                                    Créée par <span class="text-slate-700 dark:text-slate-300">{{ $coloc->owner->name }}</span>
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-6">
+                            <div class="text-center">
+                                <p class="text-sm font-bold text-slate-900 dark:text-slate-100">{{ $coloc->active_members_count }}</p>
+                                <p class="text-[9px] text-slate-400 uppercase tracking-widest font-semibold">Membres</p>
+                            </div>
+                            <div class="w-20 text-right">
+                                @if ($coloc->status === 'active')
+                                    <span class="px-2 py-0.5 rounded-md bg-green-50 text-green-600 dark:bg-green-900/20 dark:text-green-400 text-[10px] font-bold">
+                                        Active
+                                    </span>
+                                @else
+                                    <span class="px-2 py-0.5 rounded-md bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400 text-[10px] font-bold">
+                                        Annulée
+                                    </span>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+
+            <div class="mt-6">
+                {{ $allColocations->links() }}
+            </div>
+        </div>
+    @endif
+
 </x-dashboard-layout>

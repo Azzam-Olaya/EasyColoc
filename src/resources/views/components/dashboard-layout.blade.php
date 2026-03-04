@@ -68,6 +68,16 @@
                     <span class="material-symbols-outlined">receipt_long</span>
                     <span>Expenses</span>
                 </a>
+                @endif
+                
+                @if (auth()->user()?->is_global_admin)
+                <a href="{{ route('admin.users.index') }}"
+                   class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all
+                          {{ $active === 'users' ? 'bg-primary text-white shadow-lg shadow-primary/20 font-semibold' : 'text-slate-600 dark:text-slate-400 hover:bg-primary/5 hover:text-primary' }}">
+                    <span class="material-symbols-outlined">group</span>
+                    <span>Members</span>
+                </a>
+                @elseif (isset($activeColocation) && $activeColocation)
                 <a href="{{ route('colocations.show', $activeColocation) }}#members"
                    class="flex items-center gap-3 px-4 py-3 rounded-xl transition-all
                           {{ $active === 'members' ? 'bg-primary text-white shadow-lg shadow-primary/20 font-semibold' : 'text-slate-600 dark:text-slate-400 hover:bg-primary/5 hover:text-primary' }}">

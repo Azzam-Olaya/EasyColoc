@@ -10,6 +10,7 @@ use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Illuminate\Support\Facades\DB;
 
 class ColocationController extends Controller
 {
@@ -22,8 +23,18 @@ class ColocationController extends Controller
             ->with('owner')
             ->first();
 
+        $allColocations = null;
+        if ($user->is_global_admin) {
+            $allColocations = Colocation::query()
+                ->with(['owner'])
+                ->withCount('activeMembers')
+                ->orderByDesc('created_at')
+                ->paginate(15, ['*'], 'colocations_page');
+        }
+
         return view('colocations.index', [
             'activeColocation' => $activeColocation,
+            'allColocations' => $allColocations,
         ]);
     }
 
@@ -140,7 +151,7 @@ class ColocationController extends Controller
         ]);
     }
 
-    public function cancel(Request $request, Colocation $colocation): RedirectResponse
+    public function cancel(Request $request, Colocation $colocation, SettlementService $settlementService): RedirectResponse
     {
         $user = $request->user();
 
@@ -151,6 +162,21 @@ class ColocationController extends Controller
 
         abort_unless($membership, 403);
         abort_unless(((int) $colocation->owner_user_id === (int) $user->id) || (($membership->pivot->role ?? null) === 'owner'), 403);
+
+        $activeMembers = $colocation->activeMembers()->get();
+        $expenses = $colocation->expenses()->get();
+        $payments = $colocation->payments()->get();
+        
+        $balances = $settlementService->balances($activeMembers, $expenses, $payments);
+
+        foreach ($balances as $balance) {
+            $member = $balance['user'];
+            if ($balance['balance_cents'] < 0) {
+                $member->decrement('reputation_score');
+            } else {
+                $member->increment('reputation_score');
+            }
+        }
 
         $colocation->update([
             'status' => 'cancelled',
@@ -189,5 +215,127 @@ class ColocationController extends Controller
         }
 
         return back()->with('status', 'Rôle mis à jour.');
+    }
+
+    public function leave(Request $request, Colocation $colocation, SettlementService $settlementService): RedirectResponse
+    {
+        $user = $request->user();
+
+        $membership = $colocation->members()
+            ->whereKey($user->id)
+            ->wherePivotNull('left_at')
+            ->first();
+
+        abort_unless($membership, 403);
+
+        $isOwner = ((int) $colocation->owner_user_id === (int) $user->id)
+            || (($membership->pivot->role ?? null) === 'owner');
+        
+        if ($isOwner) {
+            return back()->with('error', 'En tant que Owner, tu ne peux pas quitter directement. Transfère ton rôle ou annule la colocation.');
+        }
+
+        DB::transaction(function () use ($colocation, $user, $settlementService) {
+            $this->processDeparture($colocation, $user, false, $settlementService);
+        });
+
+        return redirect()->route('dashboard')->with('status', 'Tu as quitté la colocation.');
+    }
+
+    public function removeMember(Request $request, Colocation $colocation, User $user, SettlementService $settlementService): RedirectResponse
+    {
+        $currentUser = $request->user();
+
+        $currentMembership = $colocation->members()
+            ->whereKey($currentUser->id)
+            ->wherePivotNull('left_at')
+            ->first();
+
+        abort_unless($currentMembership, 403);
+        $isOwner = ((int) $colocation->owner_user_id === (int) $currentUser->id)
+            || (($currentMembership->pivot->role ?? null) === 'owner');
+        abort_unless($isOwner, 403);
+
+        $targetMembership = $colocation->members()
+            ->whereKey($user->id)
+            ->wherePivotNull('left_at')
+            ->first();
+            
+        abort_unless($targetMembership, 404);
+
+        $isTargetOwner = ((int) $colocation->owner_user_id === (int) $user->id)
+            || (($targetMembership->pivot->role ?? null) === 'owner');
+
+        if ($isTargetOwner) {
+            return back()->with('error', 'Tu ne peux pas retirer un Owner.');
+        }
+
+        DB::transaction(function () use ($colocation, $user, $settlementService) {
+            $this->processDeparture($colocation, $user, true, $settlementService);
+        });
+
+        return back()->with('status', 'Membre retiré avec succès.');
+    }
+
+    private function processDeparture(Colocation $colocation, User $leavingUser, bool $isRemoval, SettlementService $settlementService)
+    {
+        $activeMembers = $colocation->activeMembers()->get();
+        $ownerId = $colocation->owner_user_id;
+
+        $expenses = $colocation->expenses()->get();
+        $payments = $colocation->payments()->get();
+        $oldBalances = $settlementService->balances($activeMembers, $expenses, $payments);
+
+        $leavingUserOldBalance = collect($oldBalances)->firstWhere('user.id', $leavingUser->id);
+
+        if ($leavingUserOldBalance) {
+            if ($leavingUserOldBalance['balance_cents'] < 0) {
+                $leavingUser->decrement('reputation_score');
+            } else {
+                $leavingUser->increment('reputation_score');
+            }
+        }
+
+        $colocation->members()->updateExistingPivot($leavingUser->id, ['left_at' => now()]);
+
+        $colocation->expenses()->where('paid_by_user_id', $leavingUser->id)->update(['paid_by_user_id' => $ownerId]);
+        $colocation->payments()->where('from_user_id', $leavingUser->id)->update(['from_user_id' => $ownerId]);
+        $colocation->payments()->where('to_user_id', $leavingUser->id)->update(['to_user_id' => $ownerId]);
+
+        if ($isRemoval) {
+            $newActiveMembers = $colocation->activeMembers()->get();
+            $newExpenses = $colocation->expenses()->get();
+            $newPayments = $colocation->payments()->get();
+            $newBalances = $settlementService->balances($newActiveMembers, $newExpenses, $newPayments);
+
+            foreach ($newActiveMembers as $member) {
+                if ($member->id === $ownerId) continue;
+
+                $oldBal = collect($oldBalances)->firstWhere('user.id', $member->id)['balance_cents'] ?? 0;
+                $newBal = collect($newBalances)->firstWhere('user.id', $member->id)['balance_cents'] ?? 0;
+                
+                $diff = $newBal - $oldBal;
+
+                if ($diff < 0) {
+                    \App\Models\Payment::create([
+                        'colocation_id' => $colocation->id,
+                        'from_user_id' => $ownerId,
+                        'to_user_id' => $member->id,
+                        'created_by_user_id' => $ownerId,
+                        'amount' => number_format(abs($diff) / 100, 2, '.', ''),
+                        'paid_at' => now(),
+                    ]);
+                } elseif ($diff > 0) {
+                    \App\Models\Payment::create([
+                        'colocation_id' => $colocation->id,
+                        'from_user_id' => $member->id,
+                        'to_user_id' => $ownerId,
+                        'created_by_user_id' => $ownerId,
+                        'amount' => number_format(abs($diff) / 100, 2, '.', ''),
+                        'paid_at' => now(),
+                    ]);
+                }
+            }
+        }
     }
 }
